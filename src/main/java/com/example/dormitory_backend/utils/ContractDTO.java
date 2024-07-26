@@ -1,10 +1,10 @@
 package com.example.dormitory_backend.utils;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 public class ContractDTO {
 
+    private Integer ContractDTOId;
     private Integer studentId;
     private Integer dormitoryId;
     private Integer roomId;
@@ -12,6 +12,14 @@ public class ContractDTO {
     private LocalDate date_end_contract;
 
     // Getters and Setters
+
+    public Integer getContractDTOId() {
+        return ContractDTOId;
+    }
+
+    public void setContractDTOId(Integer contractDTOId) {
+        ContractDTOId = contractDTOId;
+    }
 
     public Integer getStudentId() {
         return studentId;

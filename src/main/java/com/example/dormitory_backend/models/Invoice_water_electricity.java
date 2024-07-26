@@ -1,6 +1,6 @@
 package com.example.dormitory_backend.models;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -16,13 +16,14 @@ public class Invoice_water_electricity {
 
     @ManyToOne
     @JoinColumn(name = "id_room", nullable = false)
-    //@JsonBackReference
+    @JsonIgnoreProperties({"invoiceWaterElectricities", "contracts", "dormitory"})
     private Room room;
 
     private Double total_amount_water_electricity;
     private LocalDate created_at;
 
     @OneToMany(mappedBy = "invoiceWaterElectricity", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties("invoiceWaterElectricity")
     private List<Detail_invoice_water_electricity> detailInvoiceWaterElectricities;
 
     ////

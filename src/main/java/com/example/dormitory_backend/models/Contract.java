@@ -1,33 +1,38 @@
 package com.example.dormitory_backend.models;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
-import java.util.Date;
 
-// Contract = កិច្ចសន្យា
+/*
+Contract = កិច្ចសន្យា
+
+@JsonManagedReference is used to indicate the parent side of a bidirectional relationship.
+@JsonBackReference is used to indicate the child side of a bidirectional relationship.
+
+ */
 @Entity
 @Table(name = "contracts")
 public class Contract {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id_contract;
 
     @ManyToOne
     @JoinColumn(name = "id_student", nullable = false)
-    @JsonBackReference // Back side of the relationship
+    @JsonIgnoreProperties("contracts") // Ignore the 'contracts' property in Student
     private Student student;
 
     @ManyToOne
     @JoinColumn(name = "id_dormitory", nullable = false)
-    //@JsonManagedReference // Managed side of the relationship
+    @JsonIgnoreProperties("contracts")
     private Dormitory dormitory;
 
     @ManyToOne
     @JoinColumn(name = "id_room", nullable = false)
-    //@JsonManagedReference
+    @JsonIgnoreProperties({"contracts", "dormitory", "invoiceWaterElectricities"})
     private Room room;
 
     private LocalDate date_start_contract;

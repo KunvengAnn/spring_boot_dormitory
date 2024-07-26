@@ -41,4 +41,18 @@ public class AuthService {
 
         return null; // Return null if credentials are invalid
     }
+
+    public String deleteUser(Integer id_user, String token) {
+        Optional<User> user = userRepository.findById(id_user);
+        if (user.isPresent()) {
+            if (token.equals(user.get().getToken())) {
+                userRepository.delete(user.get());
+                return "User deleted successfully";
+            } else {
+                return "Invalid token";
+            }
+        }
+        return "User not found";
+    }
+
 }

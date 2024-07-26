@@ -1,39 +1,42 @@
-package com.example.dormitory_backend.models;
+package com.example.dormitory_backend.utils;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.*;
+import com.example.dormitory_backend.models.Contract;
 
 import java.time.LocalDate;
 import java.util.List;
 
-@Entity
-@Table(name = "students")
-public class Student {
+public class StudentDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id_student;
     private String student_name;
     private Boolean student_sex;
+    private String citizenIdentification;
     private LocalDate date_of_birth_student;
     private String student_class;
-    private String department_of_student; // (VietName Khoa)
+    private String department_of_student;
     private String student_phone;
-    private String citizenIdentification;
 
     private String student_imageUrl;
 
-    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnoreProperties("student")
-    private List<Contract> contracts;
 
-    //
+    // getter and setter
     public Integer getId_student() {
         return id_student;
     }
 
     public void setId_student(Integer id_student) {
         this.id_student = id_student;
+    }
+
+    public String getStudent_name() {
+        return student_name;
+    }
+    public void setStudent_name(String student_name) {
+        this.student_name = student_name;
+    }
+
+    public Boolean getStudent_sex(){
+        return student_sex;
     }
 
     public String getCitizenIdentification() {
@@ -43,25 +46,8 @@ public class Student {
         this.citizenIdentification = citizenIdentification;
     }
 
-    ///
-    public List<Contract> getContracts() {
-        return contracts;
-    }
-
-    public void setContracts(List<Contract> contracts) {
-        this.contracts = contracts;
-    }
-    public String getStudent_name() {
-        return student_name;
-    }
-    public void setStudent_name(String student_name) {
-        this.student_name = student_name;
-    }
     public void setStudent_sex(Boolean student_sex){
         this.student_sex = student_sex;
-    }
-    public Boolean getStudent_sex(){
-        return student_sex;
     }
     public LocalDate getDate_of_birth_student() {
         return date_of_birth_student;
@@ -88,10 +74,11 @@ public class Student {
         this.student_phone = student_phone;
     }
 
-    public String getStudent_imageUrl() {
+    public String getStudent_imageUrl(){
         return student_imageUrl;
     }
-    public void setStudent_imageUrl(String student_imageUrl) {
+    public void setStudent_imageUrl(String student_imageUrl){
         this.student_imageUrl = student_imageUrl;
     }
+
 }

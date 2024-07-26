@@ -1,7 +1,6 @@
 package com.example.dormitory_backend.models;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -14,11 +13,11 @@ public class Dormitory {
     private String dormitory_name;
 
     @OneToMany(mappedBy = "dormitory", cascade = CascadeType.ALL, orphanRemoval = true)
-    //@JsonManagedReference // Managed side of the relationship
+    @JsonIgnoreProperties({"dormitory", "contracts", "invoiceWaterElectricities"})
     private List<Room> rooms;
 
     @OneToMany(mappedBy = "dormitory", cascade = CascadeType.ALL, orphanRemoval = true)
-    //@JsonManagedReference // Managed side of the relationship
+    @JsonIgnoreProperties("dormitory")
     private List<Contract> contracts;
 
     public Integer getId_dormitory() {
