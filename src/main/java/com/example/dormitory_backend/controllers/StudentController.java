@@ -3,13 +3,15 @@ package com.example.dormitory_backend.controllers;
 import com.example.dormitory_backend.models.Contract;
 import com.example.dormitory_backend.models.Student;
 import com.example.dormitory_backend.services.StudentService;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.example.dormitory_backend.utils.StudentDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,93 +19,68 @@ import java.util.Optional;
 @RequestMapping(value = "/api/v1/students")
 public class StudentController {
 
+    private static final Logger logger = LoggerFactory.getLogger(StudentController.class);
+
     @Autowired
     private StudentService studentService;
 
     @GetMapping
-    public ResponseEntity<List<Student>> getAllStudents(@RequestHeader("email") String email, @RequestHeader("token") String token) {
+    public ResponseEntity<List<Student>> getAllStudents() {
         try {
-            List<Student> students = studentService.getAllStudents(email, token);
+            List<Student> students = studentService.getAllStudents();
             return ResponseEntity.ok(students);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null); // Unauthorized
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null); // Internal Server Error
+        } catch (Exception e) {
+            logger.error("Error retrieving students", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Student> getStudentById(@PathVariable Integer id, @RequestHeader("email") String email, @RequestHeader("token") String token) {
+    public ResponseEntity<Student> getStudentById(@PathVariable Integer id) {
         try {
-            Optional<Student> student = studentService.getStudentById(id, email, token);
+            Optional<Student> student = studentService.getStudentById_no_token(id);
             return student.map(ResponseEntity::ok)
-                    .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build()); // Not Found
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // Unauthorized
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // Internal Server Error
+                    .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(null));
+        } catch (Exception e) {
+            logger.error("Error retrieving student", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
     @PostMapping
-    public ResponseEntity<Object> createStudent(@RequestBody Student student) {
+    public ResponseEntity<Student> saveStudent(@RequestBody StudentDTO StDTO) {
         try {
-            if (student.getStudent_name() == null || student.getStudent_name().isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body("Student name is required.");
-            }
-            // Additional validation can be added here
-
-            Student createdStudent = studentService.saveStudent(student);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdStudent);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error saving student: " + e.getMessage()); // Bad Request
+            Student savedStudent = studentService.saveStudent(StDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedStudent);
+        } catch (Exception e) {
+            logger.error("Error saving student", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> updateStudent(@PathVariable Integer id, @RequestBody Student studentDetails) {
+    public ResponseEntity<Student> updateStudent(@PathVariable Integer id, @RequestBody StudentDTO StDTO) {
         try {
-            Optional<Student> studentOpt = studentService.getStudentById_no_token(id);
-            if (studentOpt.isPresent()) {
-                Student existingStudent = studentOpt.get();
-                existingStudent.setStudent_name(studentDetails.getStudent_name());
-                existingStudent.setStudent_sex(studentDetails.getStudent_sex());
-                existingStudent.setDate_of_birth_student(studentDetails.getDate_of_birth_student());
-                existingStudent.setStudent_class(studentDetails.getStudent_class());
-                existingStudent.setDepartment_of_student(studentDetails.getDepartment_of_student());
-                existingStudent.setStudent_phone(studentDetails.getStudent_phone());
-
-                // Clear existing contracts
-                existingStudent.getContracts().clear();
-
-                List<Contract> newContracts = studentDetails.getContracts();
-                for (Contract newContract : newContracts) {
-                    newContract.setStudent(existingStudent);
-                    existingStudent.getContracts().add(newContract);
-                }
-
-                return ResponseEntity.ok(studentService.saveStudent(existingStudent));
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Student not found.");
-            }
+            Student updatedStudent = studentService.updateStudent(id, StDTO);
+            return ResponseEntity.ok(updatedStudent);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid request data.");
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating student: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (Exception e) {
+            logger.error("Error updating student", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
-
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> deleteStudent(@PathVariable Integer id) {
+    public ResponseEntity<String> deleteStudent(@PathVariable Integer id) {
         try {
             studentService.deleteStudent(id);
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.ok("Student deleted successfully.");
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Student not found."); // Not Found
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting student: " + e.getMessage()); // Internal Server Error
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            logger.error("Error deleting student", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while deleting the student.");
         }
     }
 }

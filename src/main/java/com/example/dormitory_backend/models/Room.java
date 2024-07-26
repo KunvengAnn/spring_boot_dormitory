@@ -1,7 +1,6 @@
 package com.example.dormitory_backend.models;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -23,29 +22,30 @@ public class Room {
 
     @ManyToOne
     @JoinColumn(name = "id_dormitory", nullable = false)
-    //@JsonBackReference // Back side of the relationship
+    @JsonIgnoreProperties({"rooms", "contracts"})
     private Dormitory dormitory;
 
     // this mean one room can have many contract ( VietNames is Hop Dong )
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
-    //@JsonManagedReference // Managed side of the relationship
+    @JsonIgnoreProperties("room")
     private List<Contract> contracts;
 
     //
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
-    //@JsonManagedReference
+    //@JsonIgnoreProperties({"room", "detailInvoiceWaterElectricities"})
+    @JsonIgnoreProperties("room")
     private List<Invoice_water_electricity> invoiceWaterElectricities;
 
     //
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
-    //@JsonBackReference
+    @JsonIgnoreProperties("room")
     private List<RoomEquipment> roomEquipments;
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
-    //@JsonManagedReference
+    @JsonIgnoreProperties("room")
     private List<Water_electricity> waterElectricities;
 
-    // //
+
     public Integer getId_room() {
         return id_room;
     }

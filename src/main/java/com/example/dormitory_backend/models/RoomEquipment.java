@@ -12,11 +12,12 @@ public class RoomEquipment {
 
     @ManyToOne
     @JoinColumn(name = "id_equipment", nullable = false)
+    @JsonBackReference // child of parent entity relationship
     private Equipment equipment;
 
     @ManyToOne
     @JoinColumn(name = "id_room", nullable = false)
-    //@JsonBackReference
+    @JsonBackReference // child of parent entity relationship
     private Room room;
 
     private Integer quantity_equipment;

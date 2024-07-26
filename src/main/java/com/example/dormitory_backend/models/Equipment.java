@@ -1,6 +1,5 @@
 package com.example.dormitory_backend.models;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -14,7 +13,6 @@ public class Equipment {
     private String equipment_type;    // ( ex: Furniture, Electronic)
 
     @OneToMany(mappedBy = "equipment", cascade = CascadeType.ALL, orphanRemoval = true)
-    //@JsonManagedReference
     private List<RoomEquipment> roomEquipments;
 
     ////

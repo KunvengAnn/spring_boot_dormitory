@@ -10,6 +10,7 @@ import com.example.dormitory_backend.services.DormitoryService;
 import com.example.dormitory_backend.services.RoomService;
 import com.example.dormitory_backend.utils.ContractDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -72,7 +73,7 @@ public class ContractController {
 
             // Create and save contract
             Contract contract = new Contract();
-            contract.setStudent(student.get());
+            //contract.setStudent(student.get());
             contract.setDormitory(dormitory.get());
             contract.setRoom(room.get());
             contract.setDate_start_contract(contractDTO.getDate_start_contract());
@@ -86,32 +87,27 @@ public class ContractController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Contract> updateContract(@PathVariable Integer id, @RequestBody Contract contractDetails) {
+    public ResponseEntity<Contract> updateContract(@PathVariable Integer id, @RequestBody ContractDTO contractDTO) {
         try {
-            Optional<Contract> existingContract = contractService.getContractById(id);
-            if (existingContract.isPresent()) {
-                Contract updatedContract = existingContract.get();
-                updatedContract.setStudent(contractDetails.getStudent());
-                updatedContract.setDormitory(contractDetails.getDormitory());
-                updatedContract.setRoom(contractDetails.getRoom());
-                updatedContract.setDate_start_contract(contractDetails.getDate_start_contract());
-                updatedContract.setDate_end_contract(contractDetails.getDate_end_contract());
-                return ResponseEntity.ok(contractService.saveContract(updatedContract));
-            } else {
-                return ResponseEntity.notFound().build();
-            }
+            Contract updatedContract = contractService.updateContract(id, contractDTO);
+            return ResponseEntity.ok(updatedContract);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (Exception e) {
-            return ResponseEntity.status(500).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteContract(@PathVariable Integer id) {
+    public ResponseEntity<String> deleteContract(@PathVariable Integer id) {
         try {
             contractService.deleteContract(id);
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.ok("Contract deleted successfully.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(500).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while deleting the contract.");
         }
     }
+
 }

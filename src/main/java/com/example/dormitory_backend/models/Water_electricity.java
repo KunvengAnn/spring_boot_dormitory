@@ -1,6 +1,5 @@
 package com.example.dormitory_backend.models;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -14,7 +13,6 @@ public class Water_electricity {
 
     @ManyToOne
     @JoinColumn(name = "id_room", nullable = false)
-    //@JsonBackReference
     private Room room;
 
     private Double quantity_electricity_use_start;

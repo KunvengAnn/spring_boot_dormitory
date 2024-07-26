@@ -1,7 +1,6 @@
 package com.example.dormitory_backend.models;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 @Entity
@@ -13,7 +12,7 @@ public class Detail_invoice_water_electricity {
 
     @ManyToOne
     @JoinColumn(name = "id_invoice_w_e", nullable = false)
-    @JsonBackReference
+    @JsonIgnoreProperties({"detailInvoiceWaterElectricities", "room"})
     private Invoice_water_electricity invoiceWaterElectricity;
 
     private Double water_price;
