@@ -3,14 +3,19 @@ package com.example.dormitory_backend.controllers;
 import com.example.dormitory_backend.models.Contract;
 import com.example.dormitory_backend.models.Student;
 import com.example.dormitory_backend.services.StudentService;
+import com.example.dormitory_backend.utils.FileUploadDto;
 import com.example.dormitory_backend.utils.StudentDTO;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +28,35 @@ public class StudentController {
 
     @Autowired
     private StudentService studentService;
+
+    @PostMapping
+    public ResponseEntity<Object> saveStudent(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("studentDTO") String studentDTOJson
+    ) {
+        try {
+            // Convert studentDTOJson string to StudentDTO
+            ObjectMapper objectMapper = new ObjectMapper();
+            StudentDTO studentDTO = objectMapper.readValue(studentDTOJson, StudentDTO.class);
+
+            // Wrap everything into FileUploadDto
+            FileUploadDto fileUploadDto = new FileUploadDto();
+            fileUploadDto.setFile(file);
+            fileUploadDto.setStudentDTO(studentDTO);
+
+            Student savedStudent = studentService.saveStudent(fileUploadDto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedStudent);
+        } catch (DataIntegrityViolationException e) {
+            logger.error("Data integrity violation: ", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Data integrity violation: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid argument: ", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid argument: " + e.getMessage());
+        } catch (Exception e) {
+            logger.error("Error saving student: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + e.getMessage());
+        }
+    }
 
     @GetMapping
     public ResponseEntity<List<Student>> getAllStudents() {
@@ -47,30 +81,34 @@ public class StudentController {
         }
     }
 
-    @PostMapping
-    public ResponseEntity<Student> saveStudent(@RequestBody StudentDTO StDTO) {
-        try {
-            Student savedStudent = studentService.saveStudent(StDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedStudent);
-        } catch (Exception e) {
-            logger.error("Error saving student", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-
     @PutMapping("/{id}")
-    public ResponseEntity<Student> updateStudent(@PathVariable Integer id, @RequestBody StudentDTO StDTO) {
+    public ResponseEntity<Object> updateStudent(
+            @PathVariable Integer id,
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam("studentDTO") String studentDTOJson
+    ) {
         try {
-            Student updatedStudent = studentService.updateStudent(id, StDTO);
+            // Convert studentDTOJson string to StudentDTO
+            ObjectMapper objectMapper = new ObjectMapper();
+            StudentDTO studentDTO = objectMapper.readValue(studentDTOJson, StudentDTO.class);
+
+            // Wrap everything into FileUploadDto
+            FileUploadDto fileUploadDto = new FileUploadDto();
+            fileUploadDto.setFile(file);
+            fileUploadDto.setStudentDTO(studentDTO);
+
+            Student updatedStudent = studentService.updateStudent(id, fileUploadDto);
             return ResponseEntity.ok(updatedStudent);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (DataIntegrityViolationException e) {
+            logger.error("Data integrity violation: ", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Data integrity violation: " + e.getMessage());
         } catch (Exception e) {
             logger.error("Error updating student", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + e.getMessage());
         }
     }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteStudent(@PathVariable Integer id) {
         try {

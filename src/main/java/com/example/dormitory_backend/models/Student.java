@@ -1,9 +1,11 @@
 package com.example.dormitory_backend.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -15,7 +17,9 @@ public class Student {
     private Integer id_student;
     private String student_name;
     private Boolean student_sex;
-    private LocalDate date_of_birth_student;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private Date date_of_birth_student;
     private String student_class;
     private String department_of_student; // (VietName Khoa)
     private String student_phone;
@@ -39,6 +43,7 @@ public class Student {
     public String getCitizenIdentification() {
         return citizenIdentification;
     }
+
     public void setCitizenIdentification(String citizenIdentification) {
         this.citizenIdentification = citizenIdentification;
     }
@@ -63,10 +68,10 @@ public class Student {
     public Boolean getStudent_sex(){
         return student_sex;
     }
-    public LocalDate getDate_of_birth_student() {
+    public Date getDate_of_birth_student() {
         return date_of_birth_student;
     }
-    public void setDate_of_birth_student(LocalDate date_of_birth_student) {
+    public void setDate_of_birth_student(Date date_of_birth_student) {
         this.date_of_birth_student = date_of_birth_student;
     }
     public String getStudent_class() {

@@ -41,6 +41,7 @@ public class SecurityConfig {
                 logger.error("User not found with email: {}", email);
                 throw new RuntimeException("User not found");
             }
+
             logger.info("User found with email: {}", email);
             return new org.springframework.security.core.userdetails.User(
                     user.get().getEmail(),

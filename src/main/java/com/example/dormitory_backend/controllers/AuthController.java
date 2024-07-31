@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -27,11 +28,11 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestBody RegistrationRequest registrationRequest) {
+    public ResponseEntity<User> registerUser(@RequestBody RegistrationRequest registrationRequest) {
         try {
             // Check if user already exists
             if (userRepository.findByEmail(registrationRequest.getEmail()).isPresent()) {
-                return ResponseEntity.badRequest().body("Email is already in use.");
+                return ResponseEntity.badRequest().build();
             }
 
             // Create a new user
@@ -48,34 +49,43 @@ public class AuthController {
 
             userRepository.save(user);
 
-            return ResponseEntity.ok("User registered successfully. Token: " + token);
+            return ResponseEntity.ok(user);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while registering the user.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> loginUser(@RequestBody User loginUser) {
+    public ResponseEntity<User> loginUser(@RequestBody User loginUser) {
         try {
             // Validate input fields
             if (loginUser.getEmail() == null || loginUser.getPassword() == null ||
                     loginUser.getEmail().isEmpty() || loginUser.getPassword().isEmpty()) {
-                return ResponseEntity.badRequest().body("Email and password are required.");
+                return ResponseEntity.badRequest().build();
             }
 
-            if (!userRepository.findByEmail(loginUser.getEmail()).isPresent()) {
-                return ResponseEntity.badRequest().body("Please register an account first.");
+            // Authenticate user and get the updated user
+            User authenticatedUser = authService.loginUser(loginUser.getEmail(), loginUser.getPassword());
+            if (authenticatedUser == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
 
-            // Authenticate user
-            String token = authService.loginUser(loginUser.getEmail(), loginUser.getPassword(), loginUser.getToken());
-            if (token == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials.");
-            }
-
-            return ResponseEntity.ok("Login successful. Token: " + token);
+            return ResponseEntity.ok(authenticatedUser);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while logging in.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/getCurrentUser")
+    public ResponseEntity<User> getCurrentUser(@RequestParam String email) {
+        try {
+            User currentUser = authService.getCurrentUserByEmail(email);
+            if (currentUser == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            return ResponseEntity.ok(currentUser);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 

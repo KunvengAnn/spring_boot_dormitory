@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class AuthService {
@@ -29,18 +30,24 @@ public class AuthService {
         return "User registered successfully";
     }
 
-    public String loginUser(String email, String password, String token) {
+    public User loginUser(String email, String password) {
         Optional<User> existingUser = userRepository.findByEmail(email);
         if (existingUser.isPresent() && passwordEncoder.matches(password, existingUser.get().getPassword())) {
-            // Validate token if provided
-            if (token == null || !token.equals(existingUser.get().getToken())) {
-                return null; // Return null if token is invalid
-            }
-            return existingUser.get().getToken(); // Return valid token
+            User user = existingUser.get();
+            // Generate a new token
+            String token = UUID.randomUUID().toString();
+            user.setToken(token);
+            userRepository.save(user);
+            return user;
         }
-
-        return null; // Return null if credentials are invalid
+        return null;
     }
+
+    public User getCurrentUserByEmail(String email) {
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        return userOptional.orElse(null);
+    }
+
 
     public String deleteUser(Integer id_user, String token) {
         Optional<User> user = userRepository.findById(id_user);

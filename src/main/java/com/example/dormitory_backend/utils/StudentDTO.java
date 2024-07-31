@@ -1,8 +1,10 @@
 package com.example.dormitory_backend.utils;
 
 import com.example.dormitory_backend.models.Contract;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 public class StudentDTO {
@@ -11,7 +13,10 @@ public class StudentDTO {
     private String student_name;
     private Boolean student_sex;
     private String citizenIdentification;
-    private LocalDate date_of_birth_student;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private Date date_of_birth_student;
+
     private String student_class;
     private String department_of_student;
     private String student_phone;
@@ -49,10 +54,10 @@ public class StudentDTO {
     public void setStudent_sex(Boolean student_sex){
         this.student_sex = student_sex;
     }
-    public LocalDate getDate_of_birth_student() {
+    public Date getDate_of_birth_student() {
         return date_of_birth_student;
     }
-    public void setDate_of_birth_student(LocalDate date_of_birth_student) {
+    public void setDate_of_birth_student(Date date_of_birth_student) {
         this.date_of_birth_student = date_of_birth_student;
     }
     public String getStudent_class() {
